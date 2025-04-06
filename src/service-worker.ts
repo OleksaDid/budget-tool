@@ -7,8 +7,10 @@
 
 import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute, createHandlerBoundToURL, PrecacheEntry } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate } from 'workbox-strategies';
+import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -31,47 +33,74 @@ precacheAndRoute(self.__WB_MANIFEST);
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
-registerRoute(
-  // Return false to exempt requests from being fulfilled by index.html.
-  ({ request, url }: { request: Request; url: URL }) => {
-    // If this isn't a navigation, skip.
-    if (request.mode !== 'navigate') {
-      return false;
-    }
-
-    // If this is a URL that starts with /_, skip.
-    if (url.pathname.startsWith('/_')) {
-      return false;
-    }
-
-    // If this looks like a URL for a resource, because it contains
-    // a file extension, skip.
-    if (fileExtensionRegexp.test(url.pathname)) {
-      return false;
-    }
-
-    // Return true to signal that we want to use the handler.
-    return true;
-  },
-  createHandlerBoundToURL((process.env.PUBLIC_URL || '') + '/index.html')
+const navigationRoute = new NavigationRoute(
+  createHandlerBoundToURL((process.env.PUBLIC_URL || '') + '/index.html'),
+  {
+    denylist: [fileExtensionRegexp],
+  }
 );
+registerRoute(navigationRoute);
 
-// Cache API calls
+// Cache the Google Fonts stylesheets with a stale-while-revalidate strategy.
 registerRoute(
-  ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/api/'),
+  ({ url }) => url.origin === 'https://fonts.googleapis.com',
   new StaleWhileRevalidate({
-    cacheName: 'api-cache',
+    cacheName: 'google-fonts-stylesheets',
   })
 );
 
-// Cache static assets
+// Cache the underlying font files with a cache-first strategy for 1 year.
+registerRoute(
+  ({ url }) => url.origin === 'https://fonts.gstatic.com',
+  new CacheFirst({
+    cacheName: 'google-fonts-webfonts',
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+        maxEntries: 30,
+      }),
+    ],
+  })
+);
+
+// Cache images
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'images',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 60,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+      }),
+    ],
+  })
+);
+
+// Cache API calls with NetworkFirst strategy - prefer network but fallback to cache
+registerRoute(
+  ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-cache',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 1 week
+      }),
+    ],
+  })
+);
+
+// Cache static assets with StaleWhileRevalidate strategy
 registerRoute(
   ({ request }) =>
     request.destination === 'script' ||
-    request.destination === 'style' ||
-    request.destination === 'image',
+    request.destination === 'style',
   new StaleWhileRevalidate({
-    cacheName: 'static-assets',
+    cacheName: 'static-resources',
   })
 );
 
@@ -81,4 +110,14 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+// Force a service worker update check whenever the app is loaded
+self.addEventListener('install', event => {
+  self.skipWaiting();
+});
+
+// Make sure the service worker activates immediately
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
 }); 
