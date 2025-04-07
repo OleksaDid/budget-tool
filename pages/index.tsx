@@ -7,12 +7,10 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  Grid as MuiGrid,
+  Grid,
 } from '@mui/material';
 import Head from 'next/head';
-
-// Create a Grid component that works with both item and container
-const Grid = MuiGrid;
+import GridItem from '../components/ui/GridWrapper';
 
 // Dashboard component that will be migrated further
 export default function Dashboard() {
@@ -51,8 +49,8 @@ export default function Dashboard() {
           Welcome to your budget dashboard. This page will show your financial overview.
         </Typography>
         
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+        <GridItem container spacing={3}>
+          <GridItem item xs={12} md={4}>
             <Card>
               <CardContent>
                 <Typography color="primary" variant="h6">
@@ -63,9 +61,9 @@ export default function Dashboard() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </GridItem>
           
-          <Grid item xs={12} md={4}>
+          <GridItem item xs={12} md={4}>
             <Card>
               <CardContent>
                 <Typography color="error" variant="h6">
@@ -76,9 +74,9 @@ export default function Dashboard() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </GridItem>
           
-          <Grid item xs={12} md={4}>
+          <GridItem item xs={12} md={4}>
             <Card>
               <CardContent>
                 <Typography color="secondary" variant="h6">
@@ -89,9 +87,9 @@ export default function Dashboard() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </GridItem>
           
-          <Grid item xs={12}>
+          <GridItem item xs={12}>
             <Paper sx={{ p: 2, mt: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Next Steps
@@ -100,8 +98,8 @@ export default function Dashboard() {
                 This Dashboard is a placeholder. You'll need to migrate the existing Dashboard component from the React app to this Next.js app.
               </Typography>
             </Paper>
-          </Grid>
-        </Grid>
+          </GridItem>
+        </GridItem>
       </Box>
     </>
   );
