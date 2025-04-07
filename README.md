@@ -1,50 +1,75 @@
-# Budget Tool
+# Budget Tool - Next.js App
 
-A Progressive Web App for personal budget tracking and management.
+A budget tracking Progressive Web App built with Next.js, TypeScript, Material UI, and localStorage for offline data access.
 
-## Features
+## Security Improvement
+This version of the Budget Tool has been migrated from a React app to Next.js to improve security. The key improvement is that sensitive API credentials are now stored securely on the server side, not exposed in the client-side code.
 
-- Track income and expenses
-- Categorize transactions
-- View spending summaries and reports
-- Works offline with local storage
-- Modern, responsive UI with Material UI
+## Environment Variables
+Create a `.env.local` file in the root of your project with the following variables:
 
-## Tech Stack
-
-- React
-- TypeScript
-- Material UI
-- Axios
-- Service Worker for offline functionality
-- LocalStorage for data persistence
+```
+# Tink API Credentials
+TINK_CLIENT_ID=your_tink_client_id
+TINK_CLIENT_SECRET=your_tink_client_secret
+TINK_REDIRECT_URI=http://localhost:3000/callback
+TINK_API_URL=https://api.tink.com
+ACTIVO_BANK_PROVIDER_ID=activobank-pt
+```
 
 ## Getting Started
 
-### Installation
+First, install dependencies:
 
 ```bash
 npm install
+# or
+yarn install
 ```
 
-### Development
+Then, run the development server:
 
 ```bash
-npm start
+npm run dev
+# or
+yarn dev
 ```
 
-### Production Build
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-```bash
-npm run build
-```
+## Features
 
-## Usage
+- Dashboard with financial overview
+- Transaction management
+- Category management
+- Bank connection integration via Tink API
+- Automatic transaction import
+- Offline support with localStorage
 
-1. Add your income sources
-2. Create expense categories
-3. Record transactions
-4. View reports and track your financial progress
+## Technologies
+
+- Next.js
+- TypeScript
+- Material UI
+- React Query
+- Axios
+- localStorage for offline data
+- Server-side API handling for security
+
+## PWA Features
+
+- Installable on desktop and mobile devices
+- Offline capabilities
+- Responsive design
+
+## Directory Structure
+
+- `/pages` - Next.js pages and API routes
+- `/components` - Reusable React components
+- `/context` - React context providers
+- `/services` - API services and utilities
+- `/types` - TypeScript type definitions
+- `/public` - Static assets
 
 ## License
 
