@@ -1,32 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { Container, useMediaQuery } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BudgetProvider } from './context/BudgetContext';
+import { TinkProvider } from './context/TinkContext';
 import Layout from './components/Layout';
 import IOSInstallPrompt from './components/IOSInstallPrompt';
 import OfflineNotification from './components/OfflineNotification';
-import { BudgetProvider } from './context/BudgetContext';
-import { TinkProvider } from './context/TinkContext';
 
-// Pages
-import Dashboard from './pages/Dashboard';
-import Transactions from './pages/Transactions';
-import Categories from './pages/Categories';
-import Settings from './pages/Settings';
-import TinkCallback from './pages/TinkCallback';
-
-// Create a client for React Query
-const queryClient = new QueryClient();
+// Note: This file is not used in the Next.js version of the app
+// It's kept for reference only. The functionality has been moved to pages/_app.tsx
 
 const App: React.FC = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [darkMode, setDarkMode] = useState(
+    typeof window !== 'undefined' && 
     localStorage.getItem('darkMode') === 'true' || prefersDarkMode
   );
 
   // Effect to initialize dark mode from system preference or localStorage
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === null && prefersDarkMode) {
       setDarkMode(true);
@@ -51,21 +46,16 @@ const App: React.FC = () => {
     localStorage.setItem('darkMode', (!darkMode).toString());
   };
 
+  // This component is no longer used in the Next.js version
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={new QueryClient()}>
       <ThemeProvider theme={theme}>
         <BudgetProvider>
           <TinkProvider>
             <Layout>
               <Container maxWidth="lg" sx={{ py: 3 }}>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/settings" element={<Settings toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
-                  <Route path="/callback" element={<TinkCallback />} />
-                  <Route path="/tink-callback" element={<TinkCallback />} />
-                </Routes>
+                {/* Routes have been moved to pages/ */}
+                <div>See pages/ directory for routes</div>
               </Container>
               
               {/* iOS PWA Install Prompt */}

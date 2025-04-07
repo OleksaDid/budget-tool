@@ -7,7 +7,6 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  Grid,
 } from '@mui/material';
 import Head from 'next/head';
 import GridItem from '../components/ui/GridWrapper';

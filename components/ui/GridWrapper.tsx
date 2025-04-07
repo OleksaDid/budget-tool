@@ -1,21 +1,27 @@
-import React from 'react';
+import React, { forwardRef, PropsWithChildren } from 'react';
 import { Grid, GridProps } from '@mui/material';
 
-type GridItemProps = GridProps & {
+// For properly typing the Grid component with container, item, and responsive props
+interface ExtendedGridProps extends GridProps {
   item?: boolean;
   container?: boolean;
-  xs?: number | 'auto' | boolean;
-  sm?: number | 'auto' | boolean;
-  md?: number | 'auto' | boolean;
-  lg?: number | 'auto' | boolean;
-  xl?: number | 'auto' | boolean;
-};
+  xs?: boolean | number | 'auto';
+  sm?: boolean | number | 'auto';
+  md?: boolean | number | 'auto';
+  lg?: boolean | number | 'auto';
+  xl?: boolean | number | 'auto';
+}
 
 /**
  * A wrapper for Material UI Grid component that handles type issues
  */
-export const GridItem: React.FC<GridItemProps> = (props) => {
-  return <Grid {...props} />;
-};
+const GridItem = forwardRef<HTMLDivElement, PropsWithChildren<ExtendedGridProps>>(
+  (props, ref) => {
+    return <Grid ref={ref} {...props} />;
+  }
+);
+
+// Explicitly set the display name for React DevTools
+GridItem.displayName = 'GridItem';
 
 export default GridItem; 

@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   env: {
     // Public environment variables (available in browser)
     NEXT_PUBLIC_APP_NAME: 'Budget Tool',
