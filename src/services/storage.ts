@@ -9,8 +9,19 @@
  */
 export const saveToStorage = <T>(key: string, value: T): void => {
   try {
+    if (value === null) {
+      localStorage.removeItem(key);
+      return;
+    }
+    
     const serializedValue = JSON.stringify(value);
     localStorage.setItem(key, serializedValue);
+    
+    // Verify that data was saved correctly
+    const savedValue = localStorage.getItem(key);
+    if (!savedValue) {
+      console.warn(`Failed to save data for key: ${key}`);
+    }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
@@ -28,7 +39,15 @@ export const loadFromStorage = <T>(key: string, defaultValue: T): T => {
     if (serializedValue === null) {
       return defaultValue;
     }
-    return JSON.parse(serializedValue) as T;
+    
+    try {
+      return JSON.parse(serializedValue) as T;
+    } catch (parseError) {
+      console.error(`Error parsing JSON for key ${key}:`, parseError);
+      // If parsing fails, remove the corrupted value
+      localStorage.removeItem(key);
+      return defaultValue;
+    }
   } catch (error) {
     console.error('Error loading from localStorage:', error);
     return defaultValue;

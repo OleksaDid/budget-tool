@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Container, useMediaQuery } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import IOSInstallPrompt from './components/IOSInstallPrompt';
 import OfflineNotification from './components/OfflineNotification';
 import { BudgetProvider } from './context/BudgetContext';
+import { TinkProvider } from './context/TinkContext';
 
 // Pages
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
 import Settings from './pages/Settings';
+import TinkCallback from './pages/TinkCallback';
+
+// Create a client for React Query
+const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -46,26 +52,32 @@ const App: React.FC = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <BudgetProvider>
-        <Layout>
-          <Container maxWidth="lg" sx={{ py: 3 }}>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/settings" element={<Settings toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
-            </Routes>
-          </Container>
-          
-          {/* iOS PWA Install Prompt */}
-          <IOSInstallPrompt />
-          
-          {/* Offline Status Notification */}
-          <OfflineNotification />
-        </Layout>
-      </BudgetProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <BudgetProvider>
+          <TinkProvider>
+            <Layout>
+              <Container maxWidth="lg" sx={{ py: 3 }}>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/settings" element={<Settings toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
+                  <Route path="/callback" element={<TinkCallback />} />
+                  <Route path="/tink-callback" element={<TinkCallback />} />
+                </Routes>
+              </Container>
+              
+              {/* iOS PWA Install Prompt */}
+              <IOSInstallPrompt />
+              
+              {/* Offline Status Notification */}
+              <OfflineNotification />
+            </Layout>
+          </TinkProvider>
+        </BudgetProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 

@@ -17,6 +17,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,6 +28,33 @@ import {
 import { useBudget } from '../context/BudgetContext';
 import TransactionForm from '../components/TransactionForm';
 import { Transaction } from '../types';
+import TinkTransactionsTable from '../components/TinkTransactionsTable';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`transaction-tabpanel-${index}`}
+      aria-labelledby={`transaction-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ py: 2 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
 
 const TransactionsPage: React.FC = () => {
   const { transactions, deleteTransaction, getCategoryById } = useBudget();
@@ -33,6 +62,7 @@ const TransactionsPage: React.FC = () => {
   const [transactionToDelete, setTransactionToDelete] = useState<string | undefined>(undefined);
   const [transactionFormOpen, setTransactionFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   // Sort transactions by date (newest first)
   const sortedTransactions = [...transactions].sort(
@@ -67,92 +97,107 @@ const TransactionsPage: React.FC = () => {
     setTransactionToEdit(undefined);
   };
 
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Transactions</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddTransaction}
-        >
-          Add Transaction
-        </Button>
-      </Box>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell align="right">Amount</TableCell>
-              <TableCell align="right">Type</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedTransactions.length > 0 ? (
-              sortedTransactions.map((transaction) => {
-                const category = getCategoryById(transaction.categoryId);
-                return (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{transaction.description}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={category?.name || 'Uncategorized'} 
-                        size="small" 
-                        sx={{
-                          backgroundColor: category?.color || '#888',
-                          color: '#fff',
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      ${transaction.amount.toFixed(2)}
-                    </TableCell>
-                    <TableCell align="right">
-                      <Chip
-                        label={transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
-                        color={transaction.type === 'income' ? 'success' : 'error'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleEditTransaction(transaction)}
-                        aria-label="edit"
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleDeleteClick(transaction.id)}
-                        aria-label="delete"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5">Transactions</Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddTransaction}
+          >
+            Add Transaction
+          </Button>
+        </Box>
+        
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabValue} onChange={handleTabChange} aria-label="transaction tabs">
+            <Tab label="My Transactions" />
+            <Tab label="Bank Transactions" />
+          </Tabs>
+        </Box>
+        
+        <TabPanel value={tabValue} index={0}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedTransactions.length > 0 ? (
+                  sortedTransactions.map((transaction) => {
+                    const category = getCategoryById(transaction.categoryId);
+                    return (
+                      <TableRow key={transaction.id}>
+                        <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{transaction.description}</TableCell>
+                        <TableCell>
+                          {category && (
+                            <Chip
+                              label={category.name}
+                              size="small"
+                              sx={{
+                                backgroundColor: category.color,
+                                color: '#fff',
+                              }}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell align="right" sx={{ 
+                          color: transaction.type === 'income' ? 'success.main' : 'error.main',
+                          fontWeight: 'medium'
+                        }}>
+                          {transaction.type === 'income' ? '+' : '-'}
+                          ${transaction.amount.toFixed(2)}
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEditTransaction(transaction)}
+                            aria-label="edit"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteClick(transaction.id)}
+                            aria-label="delete"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      No transactions found. Click "Add Transaction" to create one.
                     </TableCell>
                   </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} align="center">
-                  No transactions found. Click "Add Transaction" to create one.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </TabPanel>
+        
+        <TabPanel value={tabValue} index={1}>
+          <TinkTransactionsTable />
+        </TabPanel>
+      </Box>
 
-      {/* Transaction Form */}
+      {/* Transaction Form Dialog */}
       <TransactionForm
         open={transactionFormOpen}
         onClose={handleCloseTransactionForm}
@@ -165,7 +210,7 @@ const TransactionsPage: React.FC = () => {
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Delete Transaction</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this transaction? This action cannot be undone.
