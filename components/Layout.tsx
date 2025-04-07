@@ -1,6 +1,6 @@
 import React, { useState, ReactNode } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import {
   AppBar,
   Box,
@@ -13,10 +13,8 @@ import {
   ListItemIcon,
   ListItemText,
   IconButton,
-  Divider,
   useMediaQuery,
   useTheme,
-  Container,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -24,8 +22,6 @@ import {
   ListAlt as TransactionsIcon,
   Category as CategoryIcon,
   Settings as SettingsIcon,
-  Brightness4 as DarkModeIcon,
-  Brightness7 as LightModeIcon,
 } from '@mui/icons-material';
 
 interface LayoutProps {
@@ -34,11 +30,7 @@ interface LayoutProps {
   darkMode?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  toggleDarkMode, 
-  darkMode = false 
-}) => {
+const Layout: React.FC<LayoutProps> = ({ children, toggleDarkMode, darkMode }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(!isMobile);
@@ -59,12 +51,6 @@ const Layout: React.FC<LayoutProps> = ({
 
   const drawer = (
     <Box sx={{ overflow: 'auto' }}>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Budget Tool
-        </Typography>
-      </Toolbar>
-      <Divider />
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
@@ -88,90 +74,42 @@ const Layout: React.FC<LayoutProps> = ({
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      {/* App Bar */}
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : 0}px)` },
-          ml: { sm: `${drawerOpen ? drawerWidth : 0}px` },
-        }}
-      >
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={toggleDrawer}
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => item.path === router.pathname)?.text || 'Budget Tool'}
+            Budget Tool
           </Typography>
-          {toggleDarkMode && (
-            <IconButton color="inherit" onClick={toggleDarkMode}>
-              {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
-          )}
         </Toolbar>
       </AppBar>
-
-      {/* Navigation Drawer */}
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerOpen ? drawerWidth : 0 }, flexShrink: { sm: 0 } }}
-      >
-        {/* Mobile drawer */}
-        {isMobile ? (
-          <Drawer
-            variant="temporary"
-            open={drawerOpen}
-            onClose={toggleDrawer}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile
-            }}
-            sx={{
-              display: { xs: 'block', sm: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-            }}
-          >
-            {drawer}
-          </Drawer>
-        ) : (
-          /* Desktop drawer */
-          <Drawer
-            variant="persistent"
-            open={drawerOpen}
-            sx={{
-              display: { xs: 'none', sm: 'block' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-            }}
-          >
-            {drawer}
-          </Drawer>
-        )}
-      </Box>
-
-      {/* Main Content */}
-      <Box
-        component="main"
+      <Drawer
+        variant={isMobile ? 'temporary' : 'permanent'}
+        open={drawerOpen}
+        onClose={toggleDrawer}
         sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : 0}px)` },
-          ml: { sm: `${drawerOpen ? drawerWidth : 0}px` },
-          mt: { xs: '56px', sm: '64px' }, // Toolbar height
-          transition: theme.transitions.create(['margin', 'width'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
         }}
       >
-        <Container maxWidth="lg">
-          {children}
-        </Container>
+        <Toolbar />
+        {drawer}
+      </Drawer>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
+        <Toolbar />
+        {children}
       </Box>
     </Box>
   );

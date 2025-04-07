@@ -1,1 +1,12 @@
-{}
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/api/tink/create-link": "pages/api/tink/create-link.js",
+  "/api/tink/exchange-token": "pages/api/tink/exchange-token.js",
+  "/api/tink/transactions": "pages/api/tink/transactions.js",
+  "/callback": "pages/callback.html",
+  "/": "pages/index.html",
+  "/transactions": "pages/transactions.html",
+  "/_document": "pages/_document.js",
+  "/404": "pages/404.html"
+}
